@@ -1,0 +1,14 @@
+{
+  "name": "rocafort-217-api",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-04",
+  "workers_dev": true,
+  "vars": {
+    "ALLOWED_ORIGIN": "https://poletseib-ui.github.io"
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "rocafort-217",
+    "database_id": "SUBSTITUEIX-PEL-DATABASE-ID"
+  }]
+}
