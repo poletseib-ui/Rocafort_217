@@ -1,5 +1,13 @@
 # Cloudflare + GitHub Pages · Rocafort 217
 
+## Estat actual: accés públic sense claus
+
+El servei ja està desplegat a `https://rocafort-217-api.pol-etseib.workers.dev`, amb la base D1 connectada i `PUBLIC_ACCESS=true`. La web carrega les dades automàticament. Qualsevol persona pot consultar, registrar i editar moviments i configuració. Les claus antigues continuen guardades com a secrets, però no són necessàries en aquest mode.
+
+NFC de convidats sense clau: `https://poletseib-ui.github.io/Rocafort_217/index.html?scan=guest`. Les URL de Pol i Paula mantenen `?scan=pol` i `?scan=partner`.
+
+La resta d'aquesta guia descriu la instal·lació original amb accés privat. Per recuperar-la, configura `PUBLIC_ACCESS=false` al Worker; tornarà a demanar les claus.
+
 La web es publica a GitHub Pages. Cloudflare executa `worker.mjs` i guarda els moviments a D1. No cal allotjar `server.mjs`, ni mantenir un ordinador encès, ni contractar un disc persistent. El codi està preparat, però encara no s'ha desplegat al teu compte.
 
 ## Opció sense terminal: des del panell de Cloudflare
