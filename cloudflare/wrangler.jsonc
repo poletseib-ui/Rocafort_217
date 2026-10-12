@@ -9,6 +9,7 @@
   "d1_databases": [{
     "binding": "DB",
     "database_name": "rocafort-217",
-    "database_id": "SUBSTITUEIX-PEL-DATABASE-ID"
+    "database_id": "d7fad123-f55d-431b-acc1-f64b5e70628a",
+    "jurisdiction": "eu"
   }]
 }
