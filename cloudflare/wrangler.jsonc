@@ -4,7 +4,8 @@
   "compatibility_date": "2026-10-04",
   "workers_dev": true,
   "vars": {
-    "ALLOWED_ORIGIN": "https://poletseib-ui.github.io"
+    "ALLOWED_ORIGIN": "https://poletseib-ui.github.io",
+    "PUBLIC_ACCESS": "true"
   },
   "d1_databases": [{
     "binding": "DB",

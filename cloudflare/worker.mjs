@@ -31,12 +31,14 @@ export default {
     if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
     const url=new URL(request.url);
     if(request.method==='GET'&&url.pathname==='/api/health')return send(200,{ok:true,service:'rocafort-217'});
+    const publicAccess=env.PUBLIC_ACCESS==='true';
+    if(request.method==='GET'&&url.pathname==='/api/access')return send(200,{publicAccess});
     if(!url.pathname.startsWith('/api/'))return send(404,{error:'No trobat'});
-    if(!env.DB||typeof env.HOUSEHOLD_KEY!=='string'||env.HOUSEHOLD_KEY.length<24||typeof env.GUEST_KEY!=='string'||env.GUEST_KEY.length<24||env.HOUSEHOLD_KEY===env.GUEST_KEY)return send(503,{error:'Cal configurar DB i dues claus diferents d’almenys 24 caràcters.'});
+    if(!env.DB||!publicAccess&&(typeof env.HOUSEHOLD_KEY!=='string'||env.HOUSEHOLD_KEY.length<24||typeof env.GUEST_KEY!=='string'||env.GUEST_KEY.length<24||env.HOUSEHOLD_KEY===env.GUEST_KEY))return send(503,{error:'Cal configurar DB i dues claus diferents d’almenys 24 caràcters.'});
     const authorization=request.headers.get('Authorization')||'';
     if(authorization.length>1024)return send(401,{error:'Clau incorrecta'});
     const token=authorization.startsWith('Bearer ')?authorization.slice(7):'';
-    const [isHome,isGuest]=await Promise.all([sameKey(token,env.HOUSEHOLD_KEY),sameKey(token,env.GUEST_KEY)]);
+    const [isHome,isGuest]=publicAccess?[true,false]:await Promise.all([sameKey(token,env.HOUSEHOLD_KEY),sameKey(token,env.GUEST_KEY)]);
     if(!isHome&&!isGuest)return send(401,{error:'Clau incorrecta o sessió caducada'});
     try{
       if(request.method==='POST'&&url.pathname==='/api/events'){
