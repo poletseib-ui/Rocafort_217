@@ -18,10 +18,14 @@ export function reconstruct(events,now=Date.now()){
         if(e.action==='in'){
           if(open){guestAdd(open,Math.min(open.at+4*36e5,e.at),true);issues.push({key,at:open.at,text:'Visita anterior tancada provisionalment abans de la nova entrada (màxim 4 h).',estimated:true});}
           open=e;
-        }else if(open){guestAdd(open,e.at,false);open=null;}
+        }else if(open){
+          if(e.at<dayAt(open.at,0,2))guestAdd(open,e.at,false);
+          else{guestAdd(open,open.at+4*36e5,true);issues.push({key,at:open.at,text:'Visita limitada a 4 h: la sortida és dos dies després o més.',estimated:true});issues.push({key,at:e.at,text:'Sortida de convidat sense entrada recent (mateix dia o l’endemà): cal revisar.',estimated:false});}
+          open=null;
+        }
         else issues.push({key,at:e.at,text:'Sortida de convidat sense entrada: cal revisar. No s’ha inventat cap estada.',estimated:false});
       }
-      if(open){const limit=open.at+4*36e5,expired=now>=limit;guestAdd(open,Math.min(now,limit),expired,!expired);if(expired)issues.push({key,at:open.at,text:'Sortida provisional a les 4 h. Una sortida real posterior recalcularà la visita.',estimated:true});}
+      if(open){const limit=open.at+4*36e5,expired=now>=limit;guestAdd(open,Math.min(now,limit),expired,!expired);if(expired)issues.push({key,at:open.at,text:'Sortida provisional a les 4 h. Només una sortida del mateix dia o de l’endemà recalcularà la visita.',estimated:true});}
       continue;
     }
     for(const e of list.filter(e=>e.at<=now)){
