@@ -1,4 +1,4 @@
-import {summarize,monthBounds,parts,localTime} from './metrics.mjs';
+import {summarize,monthBounds,parts,localTime} from './metrics.mjs?v=20261014';
 const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),money=n=>Number.isFinite(n)?new Intl.NumberFormat('ca-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(n):'—',hours=n=>`${n.toLocaleString('ca-ES',{maximumFractionDigits:1})} h`,date=t=>new Intl.DateTimeFormat('ca-ES',{timeZone:'Europe/Madrid',dateStyle:'short',timeStyle:'short'}).format(t);
 const params=new URLSearchParams(location.search),fragment=new URLSearchParams(location.hash.slice(1)),guestKey=params.get('scan')==='guest'?(fragment.get('guestKey')||sessionStorage.getItem('guest-key')):null;
 if(guestKey){sessionStorage.setItem('guest-key',guestKey);history.replaceState(null,'',location.pathname+location.search);}

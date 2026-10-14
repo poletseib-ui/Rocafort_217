@@ -18,7 +18,7 @@ export function reconstruct(events,now=Date.now()){
         open=e;
       } else {
         if(open){add(open.at,e.at,false,'');open=null;}
-        else{const start=dayAt(e.at,10,-1);if(!last||start>=last.at){add(start,e.at,true,'Entrada estimada a les 10:00 del dia anterior.');issues.push({key,at:e.at,text:'Entrada estimada a les 10:00 del dia anterior',estimated:true});}else{issues.push({key,at:e.at,text:'Dues sortides: les 10:00 se solapen amb el fitxatge anterior. Tram omès; cal revisar.',estimated:false});}}
+        else{const start=dayAt(e.at,19,-1);if(!last||start>=last.at){add(start,e.at,true,'Entrada estimada a les 19:00 del dia anterior.');issues.push({key,at:e.at,text:'Entrada estimada a les 19:00 del dia anterior',estimated:true});}else{issues.push({key,at:e.at,text:'Dues sortides: les 19:00 se solapen amb el fitxatge anterior. Tram omès; cal revisar.',estimated:false});}}
       }
       last=e;
     }
