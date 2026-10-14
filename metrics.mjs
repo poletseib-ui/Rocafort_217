@@ -11,7 +11,19 @@ export function reconstruct(events,now=Date.now()){
   const groups=new Map(), intervals=[], issues=[];
   for(const e of events){const key=e.person==='guest'?`guest:${e.name.normalize('NFKC').trim().toLocaleLowerCase('ca')}`:e.person;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(e);}
   for(const [key,list] of groups){list.sort((a,b)=>a.at-b.at||String(a.id).localeCompare(String(b.id)));let open=null,last=null;
-    const add=(start,end,estimated,reason)=>{if(end>start)intervals.push({key,name:list[0].name,person:list[0].person,start,end,estimated,reason});};
+    const add=(start,end,estimated,reason,extra={})=>{if(end>start)intervals.push({key,name:list[0].name,person:list[0].person,start,end,estimated,reason,...extra});};
+    if(list[0].person==='guest'){
+      const guestAdd=(entry,end,estimated,pending=false)=>add(entry.at,end,estimated,estimated?'Sortida provisional: màxim 4 hores.':pending?'Visita oberta':'Sortida registrada',{arrival:entry.at,pending,overnight:!estimated&&!pending&&dayAt(end,0)>dayAt(entry.at,0)&&parts(end).hour>=6});
+      for(const e of list.filter(e=>e.at<=now)){
+        if(e.action==='in'){
+          if(open){guestAdd(open,Math.min(open.at+4*36e5,e.at),true);issues.push({key,at:open.at,text:'Visita anterior tancada provisionalment abans de la nova entrada (màxim 4 h).',estimated:true});}
+          open=e;
+        }else if(open){guestAdd(open,e.at,false);open=null;}
+        else issues.push({key,at:e.at,text:'Sortida de convidat sense entrada: cal revisar. No s’ha inventat cap estada.',estimated:false});
+      }
+      if(open){const limit=open.at+4*36e5,expired=now>=limit;guestAdd(open,Math.min(now,limit),expired,!expired);if(expired)issues.push({key,at:open.at,text:'Sortida provisional a les 4 h. Una sortida real posterior recalcularà la visita.',estimated:true});}
+      continue;
+    }
     for(const e of list.filter(e=>e.at<=now)){
       if(e.action==='in'){
         if(open){const end=dayAt(e.at,8);if(end>=open.at&&end<=e.at){add(open.at,end,true,'Dues entrades: sortida estimada a les 08:00.');issues.push({key,at:e.at,text:'Sortida estimada a les 08:00',estimated:true});}else{issues.push({key,at:e.at,text:'Dues entrades: les 08:00 queden fora de l’interval. Tram omès; cal revisar.',estimated:false});}}
@@ -30,9 +42,9 @@ function intersection(a,b){return Math.max(0,Math.min(a.end,b.end)-Math.max(a.st
 export function summarize(events,month,now=Date.now(),rent=1013){
   const [start,end]=monthBounds(month), cutoff=Math.min(end,now), {intervals,issues}=reconstruct(events,now), totals={pol:0,partner:0}, estimated={pol:0,partner:0}, weekdays={pol:Array(7).fill(0),partner:Array(7).fill(0)}, days={pol:new Set(),partner:new Set()}, guests=new Map();
   const clipped=intervals.map(i=>({...i,start:Math.max(start,i.start),end:Math.min(cutoff,i.end)})).filter(i=>i.end>i.start);
-  for(const i of clipped){if(i.person==='guest'){if(!guests.has(i.key))guests.set(i.key,{name:i.name,hours:0,days:new Set()});guests.get(i.key).hours+=(i.end-i.start)/36e5;}else{totals[i.person]+=(i.end-i.start)/36e5;if(i.estimated)estimated[i.person]+=(i.end-i.start)/36e5;}
+  for(const i of clipped){if(i.person==='guest'){if(!guests.has(i.key))guests.set(i.key,{name:i.name,hours:0,estimatedHours:0,visits:0,overnights:0,pending:0,days:new Set()});const g=guests.get(i.key);g.hours+=(i.end-i.start)/36e5;if(i.estimated)g.estimatedHours+=(i.end-i.start)/36e5;if(i.overnight)g.overnights++;if(i.pending)g.pending++;if(i.arrival>=start&&i.arrival<end){g.visits++;const p=parts(i.arrival);g.days.add(`${p.year}-${String(p.month).padStart(2,'0')}-${String(p.day).padStart(2,'0')}`);}}else{totals[i.person]+=(i.end-i.start)/36e5;if(i.estimated)estimated[i.person]+=(i.end-i.start)/36e5;}
     let t=i.start;while(t<i.end){const next=Math.min(dayAt(t,0,1),i.end),p=parts(t), date=`${p.year}-${String(p.month).padStart(2,'0')}-${String(p.day).padStart(2,'0')}`,weekday=(new Date(Date.UTC(p.year,p.month-1,p.day)).getUTCDay()+6)%7;
-      if(i.person==='guest')guests.get(i.key).days.add(date);else{days[i.person].add(date);weekdays[i.person][weekday]+=(next-t)/36e5;}t=next;}
+      if(i.person!=='guest'){days[i.person].add(date);weekdays[i.person][weekday]+=(next-t)/36e5;}t=next;}
   }
   let together=0;for(const a of clipped.filter(i=>i.person==='pol'))for(const b of clipped.filter(i=>i.person==='partner'))together+=intersection(a,b)/36e5;
   const occupied=totals.pol+totals.partner-together, elapsed=Math.max(0,cutoff-start)/36e5;

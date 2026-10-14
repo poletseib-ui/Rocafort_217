@@ -25,3 +25,9 @@ El servei està configurat amb `PUBLIC_ACCESS=true`: no cal cap clau per consult
 - Convidats: `https://poletseib-ui.github.io/Rocafort_217/index.html?scan=guest`
 
 L'escaneig només obre el formulari. Cal confirmar entrada o sortida per desar el moviment.
+
+## Visites de convidats
+
+Si falta la sortida, la visita compta fins ara durant les primeres 4 hores; després es limita provisionalment a 4 hores i es marca com a estimada. No s'afegeix cap sortida fictícia a la base. Si més tard es registra la sortida, es recalcula amb l'hora real. Si la visita travessa mitjanit i la sortida és a partir de les 06:00, es marca «S’ha quedat a dormir».
+
+Una nova entrada separa les visites: la sortida posterior només tanca l'última. Una sortida sense entrada queda per revisar, sense inventar una estada. Les visites es compten pel dia d'arribada; les hores es reparteixen entre mesos. Els convidats no afecten el repartiment del lloguer.
