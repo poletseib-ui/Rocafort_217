@@ -7,7 +7,7 @@
     "ALLOWED_ORIGIN": "https://poletseib-ui.github.io",
     "PUBLIC_ACCESS": "true",
     "WIFI_SSID": "DIGIFIBRA-PLUS-eStz",
-    "WIFI_ENABLED": "false"
+    "WIFI_ENABLED": "true"
   },
   "d1_databases": [{
     "binding": "DB",
