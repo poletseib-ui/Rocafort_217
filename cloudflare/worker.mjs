@@ -27,7 +27,7 @@ export default {
     const send=(status,value)=>new Response(JSON.stringify(value),{status,headers});
     if(!allowed||!/^https?:\/\/[^/]+$/.test(allowed))return send(503,{error:'Falta configurar ALLOWED_ORIGIN sense camí ni barra final.'});
     if(origin&&origin!==allowed)return send(403,{error:'Origen no autoritzat'});
-    if(origin){headers['Access-Control-Allow-Origin']=allowed;headers['Access-Control-Allow-Headers']='Authorization, Content-Type';headers['Access-Control-Allow-Methods']='GET, POST, PUT, OPTIONS';headers['Access-Control-Max-Age']='86400';}
+    if(origin){headers['Access-Control-Allow-Origin']=allowed;headers['Access-Control-Allow-Headers']='Authorization, Content-Type';headers['Access-Control-Allow-Methods']='GET, POST, PUT, DELETE, OPTIONS';headers['Access-Control-Max-Age']='86400';}
     if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
     const url=new URL(request.url);
     if(request.method==='GET'&&url.pathname==='/api/health')return send(200,{ok:true,service:'rocafort-217'});
@@ -74,6 +74,7 @@ export default {
         const s={rent:b.rent,pol:b.pol.trim(),partner:b.partner.trim(),split:b.split};
         await env.DB.prepare('UPDATE settings SET value=? WHERE id=1').bind(JSON.stringify(s)).run();return send(200,{ok:true});
       }
+      if(request.method==='DELETE'&&/^\/api\/events\/[a-zA-Z0-9-]+$/.test(url.pathname)){const result=await env.DB.prepare('DELETE FROM events WHERE id=?').bind(url.pathname.slice(12)).run();return send(result.meta.changes?200:404,{ok:!!result.meta.changes});}
       if(request.method==='PUT'&&/^\/api\/events\/[a-zA-Z0-9-]+$/.test(url.pathname)){
         const b=await readBody(request);
         if(!Number.isSafeInteger(b.at)||b.at<0||b.at>Date.now()||!['in','out'].includes(b.action))return send(400,{error:'Hora o acció no vàlida'});
