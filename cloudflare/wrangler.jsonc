@@ -5,7 +5,9 @@
   "workers_dev": true,
   "vars": {
     "ALLOWED_ORIGIN": "https://poletseib-ui.github.io",
-    "PUBLIC_ACCESS": "true"
+    "PUBLIC_ACCESS": "true",
+    "WIFI_SSID": "DIGIFIBRA-PLUS-eStz",
+    "WIFI_ENABLED": "false"
   },
   "d1_databases": [{
     "binding": "DB",

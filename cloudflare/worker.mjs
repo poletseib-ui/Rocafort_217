@@ -33,6 +33,13 @@ export default {
     if(request.method==='GET'&&url.pathname==='/api/health')return send(200,{ok:true,service:'rocafort-217'});
     const publicAccess=env.PUBLIC_ACCESS==='true';
     if(request.method==='GET'&&url.pathname==='/api/access')return send(200,{publicAccess});
+    if(request.method==='GET'&&url.pathname==='/api/wifi'){
+      // Els propietaris activen explícitament la compartició pública.
+      if(env.WIFI_ENABLED!=='true'||!env.WIFI_SSID)return send(200,{configured:false});
+      const security=env.WIFI_SECURITY||'WPA',password=env.WIFI_PASSWORD||'';
+      if(!['WPA','WEP','nopass'].includes(security)||new TextEncoder().encode(env.WIFI_SSID).length>32||(security!=='nopass'&&!password)||password.length>128)return send(200,{configured:false});
+      return send(200,{configured:true,ssid:env.WIFI_SSID,password:security==='nopass'?'':password,security,hidden:env.WIFI_HIDDEN==='true'});
+    }
     if(!url.pathname.startsWith('/api/'))return send(404,{error:'No trobat'});
     if(!env.DB||!publicAccess&&(typeof env.HOUSEHOLD_KEY!=='string'||env.HOUSEHOLD_KEY.length<24||typeof env.GUEST_KEY!=='string'||env.GUEST_KEY.length<24||env.HOUSEHOLD_KEY===env.GUEST_KEY))return send(503,{error:'Cal configurar DB i dues claus diferents d’almenys 24 caràcters.'});
     const authorization=request.headers.get('Authorization')||'';
