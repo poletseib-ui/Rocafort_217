@@ -1,3 +1,10 @@
+
+function normalizedSettings(b){
+  if(!Number.isFinite(b.rent)||b.rent<0||b.rent>100000||Math.abs(b.rent*100-Math.round(b.rent*100))>0.00001||!['half','presence','percentage','amount'].includes(b.split)||!['pol','partner'].every(k=>typeof b[k]==='string'&&b[k].trim().length>0&&b[k].length<=80))return null;
+  const s={rent:b.rent,pol:b.pol.trim(),partner:b.partner.trim(),split:b.split};
+  if(['percentage','amount'].includes(b.split)){const max=b.split==='percentage'?100:b.rent;if(!Number.isFinite(b.share)||b.share<0||b.share>max||Math.abs(b.share*100-Math.round(b.share*100))>0.00001)return null;s.share=b.share;}
+  return s;
+}
 // Cloudflare Worker: fitxatges privats de Rocafort 217.
 // Secrets: HOUSEHOLD_KEY i GUEST_KEY. Binding D1: DB.
 const encoder = new TextEncoder();
@@ -70,8 +77,7 @@ export default {
       }
       if(request.method==='PUT'&&url.pathname==='/api/settings'){
         const b=await readBody(request);
-        if(!Number.isFinite(b.rent)||b.rent<0||b.rent>100000||!['half','presence'].includes(b.split)||!['pol','partner'].every(k=>typeof b[k]==='string'&&b[k].trim().length>0&&b[k].length<=80))return send(400,{error:'Configuració no vàlida'});
-        const s={rent:b.rent,pol:b.pol.trim(),partner:b.partner.trim(),split:b.split};
+        const s=normalizedSettings(b);if(!s)return send(400,{error:'Configuració no vàlida'});
         await env.DB.prepare('UPDATE settings SET value=? WHERE id=1').bind(JSON.stringify(s)).run();return send(200,{ok:true});
       }
       if(request.method==='DELETE'&&/^\/api\/events\/[a-zA-Z0-9-]+$/.test(url.pathname)){const result=await env.DB.prepare('DELETE FROM events WHERE id=?').bind(url.pathname.slice(12)).run();return send(result.meta.changes?200:404,{ok:!!result.meta.changes});}
